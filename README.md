@@ -1,2 +1,2 @@
-# data-securiy
+# data-security
 Recommendation system for Netflix Prize.
