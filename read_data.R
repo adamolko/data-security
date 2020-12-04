@@ -14,9 +14,22 @@ for(movie_rating_path in files){
   ratings_df = bind_rows(ratings_df, temp_ratings)
   movie_id_counter = movie_id_counter + 1
 }
-saveRDS(file = paste0(path, "/data/ratings_df.rds"), ratings_df)
+#saveRDS(file = paste0(path, "/data/ratings_df.rds"), ratings_df)
 
-#get movie info
+#Need to re-define user_ids (starting from 1 and counting), because 
+# otherwise numbers get too large (int overflows!) for stuff like spread/gather
+ratings_df = readRDS(file = paste0(path, "/data/ratings_df.rds"))
+ratings_df = ratings_df %>% mutate(old_user_id = user_id) %>% 
+  mutate(user_id = group_indices(.,old_user_id))
+#Also to make sure: create a crosswalk between old and new id (maybe we need that for some reason later)
+user_id_crosswalk = ratings_df %>% select(user_id, old_user_id) %>%  distinct(user_id, .keep_all = TRUE)
+ratings_df = ratings_df %>% select(-old_user_id)
+
+saveRDS(file = paste0(path, "/data/ratings_df.rds"), ratings_df)
+saveRDS(file = paste0(path, "/data/user_id_crosswalk.rds"), user_id_crosswalk)
+
+
+#Get movie info
 movies_path = paste0(path, "/data/movie_titles.txt")
 #Need to deal with problem, that some names have multiple "," in there, which is at the same time the delim
 #So what I did was to read in multiple name columns:
@@ -47,9 +60,11 @@ for(i in 1:nrow(probe_data)){
   }
   
 }
+#saveRDS(file = paste0(path, "/data/probe_df.rds"), probe_df)
+
+probe_df = probe_df %>% mutate(old_user_id = user_id) %>% select(-user_id) %>% 
+  left_join(user_id_crosswalk) %>% select(-old_user_id)
 saveRDS(file = paste0(path, "/data/probe_df.rds"), probe_df)
-
-
 #Training/test split:
 #1) Take ratings_df which has all ratings that user have made for any movie
 #2) Remove all ids listed in probe dataset, because those are suggested to use for testing
