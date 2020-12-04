@@ -16,8 +16,8 @@ for(movie_rating_path in files){
 }
 #saveRDS(file = paste0(path, "/data/ratings_df.rds"), ratings_df)
 
-#Need to re-define user_ids (starting from 1 and counting), because 
-# otherwise numbers get too large (int overflows!) for stuff like spread/gather
+#Re-define user_ids (starting from 1 and counting), because 
+# then it's easier to work with them
 ratings_df = readRDS(file = paste0(path, "/data/ratings_df.rds"))
 ratings_df = ratings_df %>% mutate(old_user_id = user_id) %>% 
   mutate(user_id = group_indices(.,old_user_id))
