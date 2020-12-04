@@ -1,5 +1,4 @@
 library(tidyverse)
-library(dplyr)
 
 path ="C:/R - Workspace/data security"
 
@@ -31,3 +30,37 @@ movies_df = movies_df %>% select(-name2, -name3, -name4, -name5)
 saveRDS(file = paste0(path, "/data/movies_df.rds"), movies_df)
 
 
+probe_path = paste0(path, "/data/probe.txt")
+probe_data = read_delim(probe_path, delim =",", skip=0, col_names = c("c1")) 
+current_movie_id = ""
+probe_df = tibble( movie_id = numeric(),
+                   user_id = numeric())
+for(i in 1:nrow(probe_data)){
+  print(i)
+  current_row = probe_data[i,] %>% pull(c1)
+  last_char = substring(current_row, nchar(current_row))
+  if(last_char == ":"){
+    current_movie_id = substring(current_row, 1, nchar(current_row)-1)
+  }
+  else{
+    probe_df = add_row(probe_df, movie_id = as.numeric(current_movie_id), user_id =  as.numeric(current_row))
+  }
+  
+}
+saveRDS(file = paste0(path, "/data/probe_df.rds"), probe_df)
+
+
+#Training/test split:
+#1) Take ratings_df which has all ratings that user have made for any movie
+#2) Remove all ids listed in probe dataset, because those are suggested to use for testing
+# --> gives us training dataset
+# --> all removed observations are part of the test dataset
+
+#First need to get ratings (& date) for all observations in probe_df
+#This gives us the test dataframe
+test_df = probe_df %>% left_join(ratings_df, by=c("user_id", "movie_id"))
+#Now remove all observations in ratings_df that are part of test, to get training dataset
+train_df = ratings_df %>% anti_join(test_df, by=c("user_id", "movie_id"))
+
+saveRDS(file = paste0(path, "/data/test_df.rds"), test_df)
+saveRDS(file = paste0(path, "/data/train_df.rds"), train_df)
