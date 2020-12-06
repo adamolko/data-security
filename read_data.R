@@ -14,6 +14,7 @@ for(movie_rating_path in files){
   ratings_df = bind_rows(ratings_df, temp_ratings)
   movie_id_counter = movie_id_counter + 1
 }
+ratings_df = ratings_df %>% mutate(movie_id = as.integer(movie_id))
 #saveRDS(file = paste0(path, "/data/ratings_df.rds"), ratings_df)
 
 #Re-define user_ids (starting from 1 and counting), because 
@@ -26,9 +27,41 @@ user_id_crosswalk = ratings_df %>% select(user_id, old_user_id) %>%  distinct(us
 ratings_df = ratings_df %>% select(-old_user_id)
 
 saveRDS(file = paste0(path, "/data/ratings_df.rds"), ratings_df)
+ratings_df_part1 = ratings_df %>% slice(1:50000000) %>% mutate(date = as.character(date))
+ratings_df_part2 = ratings_df %>% slice(50000001:nrow(ratings_df)) %>% mutate(date = as.character(date))
+ratings_df = bind_rows(ratings_df_part1, ratings_df_part2)
+gc()
+write_csv(file = paste0(path, "/data/ratings_df_part1.csv"), ratings_df_part1)
+write_csv(file = paste0(path, "/data/ratings_df_part2.csv"), ratings_df_part2)
+write_csv(file = paste0(path, "/data/ratings_df.csv"), ratings_df)
 saveRDS(file = paste0(path, "/data/user_id_crosswalk.rds"), user_id_crosswalk)
+write_csv(file = paste0(path, "/data/user_id_crosswalk.csv"), user_id_crosswalk)
+#-------------------------
+#Get additional variables that might be relevant:
+ratings_df = readRDS(paste0(path, "/data/ratings_df.rds"))
 
+#Transform date into integer variable counting the number of days
+min_date = min(ratings_df$date)
+ratings_df$day_number = difftime(ratings_df$date, min_date ,units="days")
+ratings_df = ratings_df %>% mutate(day_number = as.integer(day_number))
 
+#Now for each user, get some interesting variables 
+user_info_df = ratings_df %>% distinct(user_id)
+
+#get number of ratings
+user_info_df = user_info_df %>% left_join(
+  ratings_df %>% group_by(user_id) %>% summarize(number_ratings = n())
+)
+#get day of first rating
+user_info_df = user_info_df %>% left_join(
+  ratings_df %>% group_by(user_id) %>% 
+    summarize(min_rating_day = min(day_number))
+) 
+summary(user_info_df$min_rating_day)
+saveRDS(file = paste0(path, "/data/user_info_df.rds"), user_info_df)
+write_csv(file = paste0(path, "/data/user_info_df.csv"), user_info_df)
+
+#-------------------------
 #Get movie info
 movies_path = paste0(path, "/data/movie_titles.txt")
 #Need to deal with problem, that some names have multiple "," in there, which is at the same time the delim
@@ -40,9 +73,11 @@ movies_df = movies_df %>% mutate(name = ifelse(!is.na(name3), paste0(name, ",", 
 movies_df = movies_df %>% mutate(name = ifelse(!is.na(name4), paste0(name, ",", name4) ,name))
 movies_df = movies_df %>% mutate(name = ifelse(!is.na(name5), paste0(name, ",", name5) ,name))
 movies_df = movies_df %>% select(-name2, -name3, -name4, -name5)
+
 saveRDS(file = paste0(path, "/data/movies_df.rds"), movies_df)
+write_csv(file = paste0(path, "/data/movies_df.csv"), movies_df)
 
-
+#Get probe ids
 probe_path = paste0(path, "/data/probe.txt")
 probe_data = read_delim(probe_path, delim =",", skip=0, col_names = c("c1")) 
 current_movie_id = ""
@@ -60,22 +95,25 @@ for(i in 1:nrow(probe_data)){
   }
   
 }
+probe_df = probe_df %>% mutate(movie_id = as.integer(movie_id))
 #saveRDS(file = paste0(path, "/data/probe_df.rds"), probe_df)
 
 probe_df = probe_df %>% mutate(old_user_id = user_id) %>% select(-user_id) %>% 
   left_join(user_id_crosswalk) %>% select(-old_user_id)
 saveRDS(file = paste0(path, "/data/probe_df.rds"), probe_df)
+write_csv(file = paste0(path, "/data/probe_df.csv"), probe_df)
 #Training/test split:
 #1) Take ratings_df which has all ratings that user have made for any movie
 #2) Remove all ids listed in probe dataset, because those are suggested to use for testing
 # --> gives us training dataset
 # --> all removed observations are part of the test dataset
-
 #First need to get ratings (& date) for all observations in probe_df
 #This gives us the test dataframe
-test_df = probe_df %>% left_join(ratings_df, by=c("user_id", "movie_id"))
+test_df = probe_df %>% left_join(ratings_df, by=c("user_id", "movie_id")) %>% select(-date)
 #Now remove all observations in ratings_df that are part of test, to get training dataset
-train_df = ratings_df %>% anti_join(test_df, by=c("user_id", "movie_id"))
+train_df = ratings_df %>% anti_join(test_df, by=c("user_id", "movie_id"))  %>% select(-date)
 
 saveRDS(file = paste0(path, "/data/test_df.rds"), test_df)
+write_csv(file = paste0(path, "/data/test_df.csv"), test_df)
 saveRDS(file = paste0(path, "/data/train_df.rds"), train_df)
+write_csv(file = paste0(path, "/data/train_df.csv"), train_df)
