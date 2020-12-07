@@ -30,7 +30,6 @@ saveRDS(file = paste0(path, "/data/ratings_df.rds"), ratings_df)
 ratings_df_part1 = ratings_df %>% slice(1:50000000) %>% mutate(date = as.character(date))
 ratings_df_part2 = ratings_df %>% slice(50000001:nrow(ratings_df)) %>% mutate(date = as.character(date))
 ratings_df = bind_rows(ratings_df_part1, ratings_df_part2)
-gc()
 write_csv(file = paste0(path, "/data/ratings_df_part1.csv"), ratings_df_part1)
 write_csv(file = paste0(path, "/data/ratings_df_part2.csv"), ratings_df_part2)
 write_csv(file = paste0(path, "/data/ratings_df.csv"), ratings_df)
@@ -109,9 +108,12 @@ write_csv(file = paste0(path, "/data/probe_df.csv"), probe_df)
 # --> all removed observations are part of the test dataset
 #First need to get ratings (& date) for all observations in probe_df
 #This gives us the test dataframe
-test_df = probe_df %>% left_join(ratings_df, by=c("user_id", "movie_id")) %>% select(-date)
+test_df = probe_df %>% left_join(ratings_df, by=c("user_id", "movie_id")) %>% select(-date) %>%
+  arrange(user_id) %>%  relocate (user_id, .before=movie_id)
 #Now remove all observations in ratings_df that are part of test, to get training dataset
-train_df = ratings_df %>% anti_join(test_df, by=c("user_id", "movie_id"))  %>% select(-date)
+train_df = ratings_df %>% anti_join(test_df, by=c("user_id", "movie_id"))  %>% select(-date) %>% 
+  arrange(user_id) %>%  relocate (rating, .after=movie_id)
+
 
 saveRDS(file = paste0(path, "/data/test_df.rds"), test_df)
 write_csv(file = paste0(path, "/data/test_df.csv"), test_df)
