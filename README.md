@@ -15,7 +15,7 @@ If you want to recreate the analysis you can run following files in this order:
 | [scenario2.ipynb](scenario2.ipynb)                                                 | analyze change in prediction for paid reviews            |
 | [Fake_Ratings_in_Recommender_Systems.pdf](Fake_Ratings_in_Recommender_Systems.pdf) | in depth report of analysis                              |
 
-Descriptions of the code are given in the respective File.
+Descriptions of the code are given in the respective file.
 
 ## Software Requirements
 In order to run the Python code, you will need the following
