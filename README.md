@@ -20,3 +20,13 @@ python = 3.8.5
 pandas = 1.1.3  
 numpy = 1.19.2  
 scikit-surprise = 1.1.1
+
+
+In order to run the R code, you will need the following
+module versions (or higher):
+
+R = 4.0.3
+gridExtra = 2.3 
+dplyr = 1.0.2
+readr = 1.4.0   
+ggplot2 = 3.3.3
