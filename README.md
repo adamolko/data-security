@@ -10,7 +10,7 @@ If you want to recreate the analysis you can run the following files in this ord
 | File                                                                               | Content                                                  |
 |------------------------------------------------------------------------------------|----------------------------------------------------------|
 | [movielens_descriptives.R](movielens_descriptives.R)                               | Analyze and describe dataset, plot feature distributions |
-| [model_selection.ipynb](model_selection.ipynb)                                     | Hyperparametertuning for knn and SVD                     |
+| [model_selection.ipynb](model_selection.ipynb)                                     | Hyperparametertuning for kNN and SVD                     |
 | [scenario1.ipynb](scenario1.ipynb)                                                 | Analyze change in prediction for review bombing          |
 | [scenario2.ipynb](scenario2.ipynb)                                                 | Analyze change in prediction for paid reviews            |
 | [Fake_Ratings_in_Recommender_Systems.pdf](Fake_Ratings_in_Recommender_Systems.pdf) | In-depth report of analysis                              |
