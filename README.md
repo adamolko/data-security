@@ -9,6 +9,6 @@ If you want to recreate the analysis you can run following files in this order:
 | File                                                 | Content                                                  |
 |------------------------------------------------------|----------------------------------------------------------|
 | [movielens_descriptives.R](movielens_descriptives.R) | analyze and describe dataset, plot feature distributions |
-| [model selection.ipynb](model selection.ipynb)       | hyperparametertuning for knn and SVD                     |
+| [model_selection.ipynb](model_selection.ipynb)       | hyperparametertuning for knn and SVD                     |
 | [scenario1.ipynb](scenario1.ipynb)                   | analyze change in prediction for review bombing          |
 | [scenario2.ipynb](scenario2.ipynb)                   | analyze change in prediction for paid reviews            |
