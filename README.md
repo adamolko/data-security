@@ -12,3 +12,11 @@ If you want to recreate the analysis you can run following files in this order:
 | [model_selection.ipynb](model_selection.ipynb)       | hyperparametertuning for knn and SVD                     |
 | [scenario1.ipynb](scenario1.ipynb)                   | analyze change in prediction for review bombing          |
 | [scenario2.ipynb](scenario2.ipynb)                   | analyze change in prediction for paid reviews            |
+
+In order to run the Python code, you will need the following
+module versions (or higher):
+
+python = 3.8.5
+pandas = 1.1.3
+numpy = 1.19.2
+scikit-surprise = 1.1.1
